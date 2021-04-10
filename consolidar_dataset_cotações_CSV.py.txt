@@ -1,0 +1,21 @@
+import pandas as pd
+
+# Preparação do dataset de cotações do dólar
+
+#Lendo 8 arquivos CSV com cotaçoes para dentro de DataFrames Panda
+df1 = pd.read_csv("Cotacoes Fechamento USD 2016- 1 semestre.csv")
+df2 = pd.read_csv("Cotacoes Fechamento USD 2016- 2 semestre.csv")
+df3 = pd.read_csv("Cotacoes Fechamento USD 2017- 1 semestre.csv")
+df4 = pd.read_csv("Cotacoes Fechamento USD 2017- 2 semestre.csv")
+df5 = pd.read_csv("Cotacoes Fechamento USD 2018- 1 semestre.csv")
+df6 = pd.read_csv("Cotacoes Fechamento USD 2018- 2 semestre.csv")
+df7 = pd.read_csv("Cotacoes Fechamento USD 2019- 1 semestre.csv")
+df8 = pd.read_csv("Cotacoes Fechamento USD 2019- 2 semestre.csv")
+
+#Concatenando os dataframes lidos 
+df = pd.concat([df1, df2, df3, df4, df5, df6, df7, df8])
+
+print(df.head())
+
+#Gravando um único arquivo CSV com o conteúdo de todos os arquivos de cotações
+df.to_csv('Cotacoes Fechamento USD - 2016 a 2019.csv')

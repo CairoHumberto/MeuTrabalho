@@ -1,0 +1,52 @@
+#Fazer Join dos datasets de chegadas e cotaçoes após suas transformações anteriores
+
+import pandas as pd
+import math
+
+# Preparação do dataset de chegada de turistas
+
+#Lendo 4 arquivos Excel com chegadas para dentro de DataFrames Panda
+df_chegadas = pd.read_excel("Chegadas de turistas - 2016 a 2019.xlsx")
+df_cotacoes = pd.read_excel("Cotações após extrair e transformar - 2016 a 2019.xlsx")
+
+
+#df_consolidado = pd.merge(df_chegadas, df_cotacoes, on = ["ano", "Mês"])
+listaCotacoesMediasMesAnterior = []
+
+#listaChegadasLogaritmo5 = []
+listaChegadasCategorizadas = []
+
+numlinChegadas = len(df_chegadas)
+numlinCotacoes = len(df_cotacoes)
+for row_chegadas in range(numlinChegadas):
+
+    #criar lista de cotações médias de meses antecedentes   
+    cotacaoMedia = 0
+    for row_cotacoes in range(numlinCotacoes):
+        if ((df_chegadas['ano'][row_chegadas] == df_cotacoes['ano'][row_cotacoes]) and (df_chegadas['Mês'][row_chegadas] == df_cotacoes['Mês'][row_cotacoes])):
+                 
+                  #listaCotacoesMediasMesAnterior.append(df_cotacoes['Cotação média do dólar no mês anterior'][row_cotacoes])
+                  #listaCotacoesMediasMesAnterior.append(0)
+                  cotacaoMedia = df_cotacoes['Cotação média do dólar no mês anterior'][row_cotacoes]
+                  #break
+        
+
+    listaCotacoesMediasMesAnterior.append(cotacaoMedia)
+
+    num_chegadas = df_chegadas['Chegadas'][row_chegadas]
+
+    if num_chegadas < 1: listaChegadasCategorizadas.append("False")
+    else:  listaChegadasCategorizadas.append("True")
+    
+
+    
+df_chegadas.insert(13,"Cotação média do mês anterior",listaCotacoesMediasMesAnterior,True)
+
+
+df_chegadas.insert(14,"Houve chegadas",listaChegadasCategorizadas,True)
+
+print(df_chegadas.head())
+
+#Passo 5: persistir o dataframe de chegadas já enriquecido com as informaçoes de cotacao
+df_chegadas.to_excel('Chegadas de turistas versus dólar - 2016 a 2019.xlsx')
+

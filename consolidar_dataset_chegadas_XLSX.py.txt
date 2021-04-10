@@ -1,0 +1,18 @@
+import pandas as pd
+
+# Preparação do dataset de chegada de turistas
+
+#Lendo 4 arquivos Excel com chegadas para dentro de DataFrames Panda
+df1 = pd.read_excel("chegadas2016.xlsx")
+df2 = pd.read_excel("chegadas2017.xlsx")
+df3 = pd.read_excel("chegadas2018.xlsx")
+df4 = pd.read_excel("chegadas2019.xlsx")
+
+
+#Concatenando os dataframes lidos 
+df = pd.concat([df1, df2, df3, df4])
+
+print(df.head())
+
+#Gravando um único arquivo XLSX com o conteúdo de todos os arquivos de chegadas
+df.to_excel('Chegadas de turistas - 2016 a 2019.xlsx')

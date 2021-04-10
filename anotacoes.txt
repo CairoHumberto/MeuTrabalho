@@ -1,0 +1,15 @@
+[8 rows x 10 columns]
+Acurácia (base de treinamento): 0.9059845769523189
+Acurácia de previsão: 0.8923210600629955
+                 precision    recall  f1-score   support
+
+    Há chegadas       0.90      0.94      0.92     30679
+Não há chegadas       0.87      0.80      0.83     15356
+
+       accuracy                           0.89     46035
+      macro avg       0.89      0.87      0.88     46035
+   weighted avg       0.89      0.89      0.89     46035
+
+                 Há chegadas (prev)  Não há chegadas (prev)
+Há chegadas                   28843                    1836
+Não há chegadas                3121                   12235

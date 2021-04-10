@@ -1,0 +1,68 @@
+
+
+!pip install pydotplus
+!pip install dtreeviz
+
+
+import pandas as pd
+import numpy as np
+from sklearn import datasets, tree
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.feature_extraction import DictVectorizer
+from sklearn.preprocessing import LabelEncoder
+
+
+df_chegadas = pd.read_excel('Chegadas de turistas versus dólar - 2016 a 2019.xlsx', sheet_name=0) 
+print("\nDimensões: {0}".format(df_chegadas.shape))
+print("\nCampos: {0}".format(df_chegadas.keys()))
+print(df_chegadas.describe(), sep='\n')
+
+X = df_chegadas.loc[:,['cod continente', 'cod pais','cod uf', 'cod via', 'cod mes', 'Cotação média do mês anterior']]
+
+le = LabelEncoder()
+y = le.fit_transform(df_chegadas.iloc[:,(df_chegadas.shape[1] - 1)])
+
+# Particiona a base de dados
+# por default 75% para treinamento e 25% para teste
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0, test_size=0.25)
+
+"""### Indução do Modelo
+
+Os três passos para indução de um modelo são:
+
+1.   Instanciar o modelo: ``` DecisionTreeClassifier()```
+2.   Treinar o modelo: ```fit()```
+3.   Testar o modelo: ```predict()```
+"""
+
+# min_samples_split = 40 produziu melhor acuracia de prev para criterion='entropy'
+# min_samples_split = 50 produziu melhor acuracia de prev para criterion='gini'
+
+df_chegadas_tree = DecisionTreeClassifier(random_state=0, criterion='gini', min_samples_split = 50) 
+
+
+df_chegadas_tree = df_chegadas_tree.fit(X_train, y_train)
+print("Acurácia (base de treinamento):", df_chegadas_tree.score(X_train, y_train))
+
+y_pred = df_chegadas_tree.predict(X_test)
+print("Acurácia de previsão:", accuracy_score(y_test, y_pred))
+print(classification_report(y_test, y_pred, target_names=["Há chegadas", "Não há chegadas"]))
+      
+cnf_matrix = confusion_matrix(y_test, y_pred)
+cnf_table = pd.DataFrame(data=cnf_matrix, index=["Há chegadas", "Não há chegadas"], 
+                         columns=["Há chegadas (prev)", "Não há chegadas (prev)"])
+print(cnf_table)
+
+
+"""### Exibição da árvore de decisão"""
+
+!pip install graphviz
+with open("chegadas.dot",'w') as f:
+       f = tree.export_graphviz(df_chegadas_tree, out_file=f)
+
+!dot -Tpdf chegadas.dot -o arvore_chegadas.pdf
+
+
+

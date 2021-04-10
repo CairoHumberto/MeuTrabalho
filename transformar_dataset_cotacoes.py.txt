@@ -1,0 +1,155 @@
+#Derivar a partir do arquivo "Cotacoes Fechamento USD - 2016 a 2019.xlsx" o arquivo 
+#"Cotações após extrair e transformar - 2016 a 2019.xlsx" contendo as colunas "ano", "Mês" e "média do mês anterior".
+
+import pandas as pd
+from datetime import datetime
+
+def str_month(numerodoMes):
+    nome = ""
+    if numerodoMes == 1:  return "janeiro"
+    elif numerodoMes == 2: return "fevereiro"
+    elif numerodoMes == 3: return "março"
+    elif numerodoMes == 4: return "abril"
+    elif numerodoMes == 5: return "maio"
+    elif numerodoMes == 6: return "junho"
+    elif numerodoMes == 7: return "julho"
+    elif numerodoMes == 8: return "agosto"
+    elif numerodoMes == 9: return "setembro"
+    elif numerodoMes == 10: return "outubro"
+    elif numerodoMes == 11: return "novembro"
+    elif numerodoMes == 12: return "dezembro"
+    else: return "erro: numero invalido"
+   
+
+
+data = pd.read_excel("Cotacoes Fechamento USD - 2016 a 2019.xlsx")
+
+
+#Passo 1: excluindo algumas colunas que não são de interesse
+data.drop(columns= ['Codigo', 'Tipo', 'Sigla', 'Compra', 'X', 'Y'], inplace = True)
+
+#restaram as colunas Data e Venda apenas
+
+# Passo 2:
+#Resolve o problema de haver datas com 7 digitos apenas
+#exemplo 4012016 é transformada para 04/01/2016A
+listaComDatasCorretas = []
+numlin = len(data)
+for row in range(numlin):
+    if len(str(data['Data'][row])) < 8:
+         uma_data_com_8_digitos = "0" + str(data['Data'][row])
+         date = datetime.strptime(uma_data_com_8_digitos, '%d%m%Y').date()
+         listaComDatasCorretas.append(date)
+    else:
+         date = datetime.strptime(str(data['Data'][row]), '%d%m%Y').date()
+         listaComDatasCorretas.append(date)
+
+#insere nova coluna no pandas com datas corretas
+data.insert(2,'Data Correta',listaComDatasCorretas,True) 
+
+#Passo 3:
+#Criar colunas de ano e mês   
+listaComAnos = []
+listaComMeses = []
+numlin = len(data)
+for row in range(numlin):
+
+    #criar lista de meses
+    if data['Data Correta'][row].month == 1:
+         listaComMeses.append("janeiro")
+    elif data['Data Correta'][row].month == 2:
+         listaComMeses.append("fevereiro")
+    elif data['Data Correta'][row].month == 3:
+         listaComMeses.append("março")
+    elif data['Data Correta'][row].month == 4:
+         listaComMeses.append("abril")
+    elif data['Data Correta'][row].month == 5:
+         listaComMeses.append("maio")
+    elif data['Data Correta'][row].month == 6:
+         listaComMeses.append("junho")
+    elif data['Data Correta'][row].month == 7:
+         listaComMeses.append("julho")
+    elif data['Data Correta'][row].month == 8:
+         listaComMeses.append("agosto")
+    elif data['Data Correta'][row].month == 9:
+         listaComMeses.append("setembro") 
+    elif data['Data Correta'][row].month == 10:
+         listaComMeses.append("outubro")
+    elif data['Data Correta'][row].month == 11:
+         listaComMeses.append("novembro")
+    elif data['Data Correta'][row].month == 12:
+         listaComMeses.append("dezembro")
+    else:
+         print("Erro: mês inválido") 
+
+    #criar lista de anos
+    listaComAnos.append(data['Data Correta'][row].year)
+
+#insere nova coluna no pandas com os anos
+data.insert(3,'ano',listaComAnos,True) 
+
+#insere nova coluna no pandas com os meses
+data.insert(4,'Mês',listaComMeses,True) 
+
+#Passo 4:
+#calcular as médias mensais do dólar
+#Criar colunas de ano e mês   
+mes = 0 
+ano = 0 
+somaCotacoes = 0
+numCotacoes = 0
+
+listaAnos = []
+listaMeses = []
+listaMedias = []
+inicio = True
+numlin = len(data)
+
+#listaComMediasMensaisParaCadaLinha.append([ano,mes,cotacaoMediaMesAnterior]) # add para o ultimo mes
+for row in range(numlin):
+
+     if data['Data Correta'][row].month != mes or data['Data Correta'][row].year != ano:        
+          
+          if ( inicio == True ):
+                  cotacaoMediaMesAnterior = data['Venda'][0]
+                  inicio = False
+                  mes = data['Data Correta'][0].month
+                  ano = data['Data Correta'][0].year
+                  #listaComMediasMensaisParaCadaLinha.append([ano,mes,cotacaoMediaMesAnterior])
+                  listaAnos.append(ano)
+                  listaMeses.append(str_month(mes))
+                  listaMedias.append(cotacaoMediaMesAnterior)
+
+
+                  somaCotacoes = data['Venda'][row]
+                  numCotacoes = 1
+          
+                  mes = data['Data Correta'][row].month
+                  ano = data['Data Correta'][row].year
+          else:
+                  cotacaoMediaMesAnterior = somaCotacoes/numCotacoes
+                           
+                  somaCotacoes = data['Venda'][row]
+                  numCotacoes = 1
+          
+                  mes = data['Data Correta'][row].month
+                  ano = data['Data Correta'][row].year
+
+                  #listaComMediasMensaisParaCadaLinha.append([ano,mes,cotacaoMediaMesAnterior])
+                  listaAnos.append(ano)
+                  listaMeses.append(str_month(mes))
+                  listaMedias.append(cotacaoMediaMesAnterior)
+     else:
+          somaCotacoes += data['Venda'][row]
+          numCotacoes += 1
+           
+df = pd.DataFrame()
+df.insert(0,'ano',listaAnos,True) 
+df.insert(1,'Mês',listaMeses,True)
+df.insert(2,'Cotação média do dólar no mês anterior',listaMedias,True)
+
+#Gravar a tabela de cotacoes no Excel
+df.to_excel("Cotações após extrair e transformar - 2016 a 2019.xlsx")
+
+
+
